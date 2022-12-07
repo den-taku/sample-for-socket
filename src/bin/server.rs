@@ -35,23 +35,29 @@ fn main() -> std::io::Result<()> {
 }
 
 fn handle_incoming_stream(mut stream: TcpStream, buffer: &mut [u8]) -> std::io::Result<()> {
-    stream.set_read_timeout(None)?;
-    // clear buffer
-    for b in buffer.into_iter() {
-        *b = 0;
+    // stream.set_read_timeout(None)?;
+
+    // receive messages until receive EOF
+    loop {
+        // read from stream
+        let size = stream.read(buffer)?;
+        // parse
+        let message = match String::from_utf8(buffer[0..size].to_vec()) {
+            Ok(message) => message,
+            Err(e) => {
+                println!("parsing error: {e:}");
+                "".to_string()
+            }
+        };
+        println!("incoming message: {message:?}");
+        // valid end: sent EOF from client
+        // invalid end: read fail (e.g. connection disconnect)
+        if &message == "EOF" || &message == "" {
+            break;
+        }
+        // return the same message to client
+        stream.write_all(&buffer[0..size])?;
     }
 
-    // read from stream
-    let size = stream.read(buffer)?;
-    let message = match String::from_utf8(buffer[0..size].to_vec()) {
-        Ok(message) => message,
-        Err(e) => {
-            println!("parsing error: {e:}");
-            "".to_string()
-        }
-    };
-    println!("incoming message: {message:?}");
-
-    // return the same message to client
-    stream.write_all(&buffer[0..size])
+    Ok(())
 }

@@ -1,3 +1,4 @@
+use std::io::{self, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
 use test_socket::decide_port;
 
@@ -19,7 +20,37 @@ fn main() -> std::io::Result<()> {
     println!("ipv4 address is {addr_ipv4:?}.");
 
     // client
-    println!("{:?}", TcpStream::connect(addr_ipv4));
+    let mut stream = TcpStream::connect(addr_ipv4)?;
+
+    // send message
+    let mut message = String::new();
+    let mut buffer = [0; 256];
+    loop {
+        message.clear();
+        // read message from stdio
+        print!("message: ");
+        io::stdout().flush()?;
+
+        io::stdin().read_line(&mut message)?;
+        if &message == "EOF\n" {
+            stream.write("EOF".as_bytes())?;
+            break;
+        }
+
+        // send to server
+        stream.write_all(&message.as_bytes())?;
+
+        // receive message from server
+        let size = stream.read(&mut buffer)?;
+        let message = match String::from_utf8(buffer[0..size].to_vec()) {
+            Ok(message) => message,
+            Err(e) => {
+                println!("parsing error: {e:}");
+                "".to_string()
+            }
+        };
+        print!("returning message: {message}");
+    }
 
     Ok(())
 }

@@ -1,10 +1,11 @@
-use std::net::{ToSocketAddrs, TcpStream};
+use std::net::{TcpStream, ToSocketAddrs};
+use test_socket::decide_port;
 
 fn main() -> std::io::Result<()> {
     // host name (maybe 127.0.0.1)
     let host = "localhost";
     // port
-    let port = 3456;
+    let port = decide_port();
 
     // generate SocketAddr (ref: https://doc.rust-lang.org/std/net/trait.ToSocketAddrs.html)
     let mut addrs_iter = (host, port).to_socket_addrs()?;

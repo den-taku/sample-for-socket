@@ -1,12 +1,11 @@
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream, ToSocketAddrs};
-use test_socket::decide_port;
 
 fn main() -> std::io::Result<()> {
     // host name (maybe 127.0.0.1)
     let host = "localhost";
     // port
-    let port = decide_port();
+    let (port, use_ipv6) = test_socket::read_args();
 
     // generate SocketAddr (ref: https://doc.rust-lang.org/std/net/trait.ToSocketAddrs.html)
     let mut addrs_iter = (host, port).to_socket_addrs()?;
@@ -19,8 +18,10 @@ fn main() -> std::io::Result<()> {
         .expect("failed to get ipv4 address");
     println!("ipv4 address is {addr_ipv4:?}.");
 
+    let addr = if use_ipv6 { addr_ipv6 } else { addr_ipv4 };
+
     // server
-    let listener = TcpListener::bind(addr_ipv4)?;
+    let listener = TcpListener::bind(addr)?;
     println!("{:?}", listener);
 
     // buffer

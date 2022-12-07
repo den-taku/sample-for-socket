@@ -13,13 +13,14 @@ fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind(addr)?;
     println!("{:?}", listener);
 
-    // buffer
-    let mut buffer = [0; 256];
-
     for stream in listener.incoming() {
-        println!("\nINCOMING: {:?}", stream);
-        handle_incoming_stream(stream?, &mut buffer)?;
-        println!("CLOSE\n");
+        std::thread::spawn(|| {
+            // buffer
+            let mut buffer = [0; 256];
+            println!("\nINCOMING: {:?}", stream);
+            handle_incoming_stream(stream.unwrap(), &mut buffer).unwrap();
+            println!("CLOSE\n");
+        });
     }
     Ok(())
 }
@@ -39,7 +40,7 @@ fn handle_incoming_stream(mut stream: TcpStream, buffer: &mut [u8]) -> std::io::
                 "".to_string()
             }
         };
-        println!("incoming message: {message:?}");
+        println!("incoming message: {message:?} from {stream:?}");
         // valid end: sent EOF from client
         // invalid end: read fail (e.g. connection disconnect)
         if &message == "EOF" || &message == "" {

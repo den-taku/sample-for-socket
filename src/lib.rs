@@ -8,6 +8,8 @@ struct Args {
     port: u16,
     #[arg(short, long, default_value_t = false)]
     ipv6: bool,
+    #[arg(short, long, default_value_t = 3456)]
+    server: u16,
 }
 
 pub fn read_args() -> (u16, bool) {
@@ -27,4 +29,8 @@ pub fn generate_address(host: &str, port: u16, use_ipv6: bool) -> std::io::Resul
     println!("ipv4 address is {addr_ipv4:?}.");
 
     Ok(if use_ipv6 { addr_ipv6 } else { addr_ipv4 })
+}
+
+pub fn server_port() -> u16 {
+    Args::parse().server
 }

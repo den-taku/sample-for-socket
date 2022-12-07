@@ -1,4 +1,4 @@
-use std::net::{TcpListener, ToSocketAddrs, TcpStream};
+use std::net::{ToSocketAddrs, TcpStream};
 
 fn main() -> std::io::Result<()> {
     // host name (maybe 127.0.0.1)
@@ -17,17 +17,8 @@ fn main() -> std::io::Result<()> {
         .expect("failed to get ipv4 address");
     println!("ipv4 address is {addr_ipv4:?}.");
 
-    // server
-    let listener = TcpListener::bind(addr_ipv4)?;
-    println!("{:?}", listener);
+    // client
+    println!("{:?}", TcpStream::connect(addr_ipv4));
 
-    for stream in listener.incoming() {
-        println!("INCOMING: {:?}", stream);
-        handle_incoming_stream(stream?)?;
-    }
-    Ok(())
-}
-
-fn handle_incoming_stream(_stream: TcpStream) -> std::io::Result<()> {
     Ok(())
 }

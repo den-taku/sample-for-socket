@@ -1,5 +1,5 @@
 use std::io::{self, Read, Write};
-use std::net::{TcpStream, ToSocketAddrs};
+use std::net::TcpStream;
 
 fn main() -> std::io::Result<()> {
     // host name (maybe 127.0.0.1)
@@ -7,18 +7,7 @@ fn main() -> std::io::Result<()> {
     // port
     let (port, use_ipv6) = test_socket::read_args();
 
-    // generate SocketAddr (ref: https://doc.rust-lang.org/std/net/trait.ToSocketAddrs.html)
-    let mut addrs_iter = (host, port).to_socket_addrs()?;
-    let addr_ipv6 = addrs_iter
-        .find(|addr| addr.is_ipv6())
-        .expect("failed to get ipv6 address");
-    println!("ipv6 address is {addr_ipv6:?}.");
-    let addr_ipv4 = addrs_iter
-        .find(|addr| addr.is_ipv4())
-        .expect("failed to get ipv4 address");
-    println!("ipv4 address is {addr_ipv4:?}.");
-
-    let addr = if use_ipv6 { addr_ipv6 } else { addr_ipv4 };
+    let addr = test_socket::generate_address(host, port, use_ipv6)?;
 
     // client
     let mut stream = TcpStream::connect(addr)?;
